@@ -14,7 +14,7 @@
 #爬虫步骤
 ##1、发送HTTP请求  
 使用requests库向目标网址发送HTTP请求，获取电影列表页面的内容。这里使用了自定义的请求头部headers来模拟浏览器行为，以避免被网站的反爬虫机制识别。  
-''' python 
+'''  
 headers = {
     'User-Agent': '你的浏览器标识',
     'Referer': 'https://movie.douban.com/tag/',
@@ -24,35 +24,35 @@ movieAllRes = requests.get(spiderTarget, params=params, headers=headers)
 '''    
 ##2、内容解析  
 使用json方法将获取的内容解析为JSON格式，进而使用jsonpath库提取需要的信息，如电影的详细页面URL、导演、评分等。  
-'''python  
+'''  
 movieAllRes = movieAllRes.json()
 detailUrls = jsonpath.jsonpath(movieAllRes, '$.data..url')
 '''
 ##3. 详细页面数据提取
 
 对于每一部电影，再次使用requests.get方法获取其详细页面的内容，然后使用BeautifulSoup进行HTML内容解析。通过CSS选择器或正则表达式提取电影的上映时间、类型、制作国家等信息。  
-'''python   
+'''   
 detailMovieRes = requests.get(detailUrls[i], headers=headers)
 soup = BeautifulSoup(detailMovieRes.text, 'lxml')
 resultData['year'] = re.findall(r'[(](.*?)[)]', soup.find('span', class_='year').get_text())[0]
 '''  
 ##4. 数据存储  
 把解析好的数据保存到pandas的DataFrame中，然后将DataFrame存储到CSV文件或直接导入到MySQL数据库。  
-'''python  
+'''  
 df = ps.DataFrame(result)  # 创建DataFrame
 df.to_csv('./datas.csv')  # 保存到CSV
 df.to_sql('movies', con=engine, index=False, if_exists='append')  # 保存到MySQL数据库
 '''  
 ##5. 循环与控制  
 通过循环控制爬取多个页面的数据，使用time.sleep来减缓爬取速度，避免对目标网站造成过大压力。  
-	'''python  
+	'''  
 for i in range(12, 20):
     spider(spiderTarget, i * 20)
     time.sleep(3)
 '''  
 
 #爬取到的字段
-	'''python  
+	'''  
 	爬取数据
     movieAllRes = movieAllRes.json()  # json转换为字典，json为一种轻量型的数据格式
 
